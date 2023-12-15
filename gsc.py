@@ -355,6 +355,24 @@ def gsc_build(args):
             print(f'Failed to parse the "{args.manifest}" file. Error:', e, file=sys.stderr)
             sys.exit(1)
 
+    # Drop support for TOML-dict syntax for files in manifest (`sgx.trusted_files.key = "file:foo"`)
+    if 'sgx' in user_manifest_dict:
+        if 'trusted_files' in user_manifest_dict['sgx']:
+            if isinstance(user_manifest_dict['sgx']['trusted_files'], dict):
+                print(f'Error: Unsupported trusted files syntax, more info: '
+                      'https://gramine.readthedocs.io/en/latest/manifest-syntax.html#trusted-files')
+                sys.exit(1)
+        if 'allowed_files' in user_manifest_dict['sgx']:
+            if isinstance(user_manifest_dict['sgx']['allowed_files'], dict):
+                print(f'Error: Unsupported allowed files syntax, more info: '
+                      'https://gramine.readthedocs.io/en/latest/manifest-syntax.html#allowed-files')
+                sys.exit(1)
+        if 'protected_files' in user_manifest_dict['sgx']:
+            if isinstance(user_manifest_dict['sgx']['protected_files'], dict):
+                print(f'Error: Unsupported protected files syntax, more info: '
+                      'https://gramine.readthedocs.io/en/latest/manifest-syntax.html#encrypted-files')
+                sys.exit(1)
+
     merged_manifest_dict = merge_two_dicts(user_manifest_dict, entrypoint_manifest_dict)
     merged_manifest_dict = merge_two_dicts(merged_manifest_dict, base_image_dict)
 
